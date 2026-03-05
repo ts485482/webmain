@@ -68,11 +68,28 @@ if st.session_state["login"]:
             st.session_state["login"] = False
             st.rerun()
 
-        if st.button("회원탈퇴",key="delete"):
-            db.collection("users").document(st.session_state["user_id"]).delete()
-            st.session_state["login"] = False
-            st.rerun()
+        if "delete_phase" not in st.session_state:
+            st.session_state["delete_phase"] = False
 
+        if not st.session_state["delete_phase"]:
+            if st.button("회원탈퇴", key="delete_button"):
+                st.session_state["delete_phase"] = True
+                st.rerun()
+        else:
+            st.text("정말로 탈퇴하시겠습니까?")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("확인(삭제)", key="delete_yes"):
+                    db.collection("users").document(st.session_state["user_id"]).delete()
+                    st.session_state["login"] = False
+                    st.session_state["delete_phase"] = False
+                    st.success("탈퇴되었습니다.")
+                    st.rerun()
+            with col2:
+                if st.button("취소", key="delete_no"):
+                    st.session_state["delete_phase"] = False
+                    st.rerun()
+            
     intab1, intab2 = st.tabs(["메모장","계산기"])
     with intab1:
         st.title("태신의 메모장")
